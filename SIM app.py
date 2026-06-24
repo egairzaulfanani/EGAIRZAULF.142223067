@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import seaborn as sns
 import io
 
@@ -58,12 +57,8 @@ COLOR_PALETTE = ["#2d6a9f", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6",
 
 # ─── Data Loader ──────────────────────────────────────────────────────────────
 @st.cache_data
-def load_data(file) -> pd.DataFrame:
-    if isinstance(file, str):
-        raw = pd.read_excel(file)
-    else:
-        raw = pd.read_excel(io.BytesIO(file.read()))
-
+def load_data() -> pd.DataFrame:
+    raw = pd.read_excel("ega_irza_ul_fanani_142223067___Responses_.xlsx")
     df = raw.iloc[:42].copy()
     df = df[df["Jenis Kelamin:"].isin(["laki-laki", "Perempuan"])].copy()
 
@@ -90,43 +85,37 @@ def bar_color(val):
     return "#ef4444"
 
 
-# ─── Sidebar ──────────────────────────────────────────────────────────────────
+# ─── Load Data ────────────────────────────────────────────────────────────────
+try:
+    df_full = load_data()
+except FileNotFoundError:
+    st.error("⚠️ File data tidak ditemukan. Pastikan file Excel ada di folder yang sama dengan app.py.")
+    st.stop()
+
+q_cols = list(Q_SHORT.keys())
+
+# ─── Sidebar – Filter saja ────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### ⚙️ Pengaturan")
+    st.markdown("### 🔍 Filter Responden")
     st.markdown("---")
-    uploaded = st.file_uploader("📂 Upload file Excel (.xlsx)", type=["xlsx"])
-    st.markdown("---")
-    st.markdown("**Filter Responden**")
-    gender_ph   = st.empty()
-    usia_ph     = st.empty()
-    fakultas_ph = st.empty()
+
+    all_genders  = sorted(df_full["Jenis Kelamin"].dropna().unique())
+    all_usia     = sorted(df_full["Usia"].dropna().unique())
+    all_fakultas = sorted(df_full["Fakultas"].dropna().unique())
+
+    sel_gender   = st.multiselect("Jenis Kelamin", all_genders,  default=all_genders)
+    sel_usia     = st.multiselect("Usia",          all_usia,     default=all_usia)
+    sel_fakultas = st.multiselect("Fakultas",      all_fakultas, default=all_fakultas)
+
     st.markdown("---")
     st.caption("Dashboard Survei Kepuasan\nSistem Absensi Kampus\n*Ega Irza Ul Fanani – 142223067*")
 
-# ─── Load Data ────────────────────────────────────────────────────────────────
-DEFAULT_PATH = "ega_irza_ul_fanani_142223067___Responses_.xlsx"
-try:
-    df_full = load_data(uploaded) if uploaded else load_data(DEFAULT_PATH)
-except FileNotFoundError:
-    st.error("⚠️ File data tidak ditemukan. Silakan upload file Excel lewat sidebar.")
-    st.stop()
-
-# ─── Filters ──────────────────────────────────────────────────────────────────
-all_genders  = sorted(df_full["Jenis Kelamin"].dropna().unique())
-all_usia     = sorted(df_full["Usia"].dropna().unique())
-all_fakultas = sorted(df_full["Fakultas"].dropna().unique())
-
-sel_gender   = gender_ph.multiselect("Jenis Kelamin", all_genders,  default=all_genders)
-sel_usia     = usia_ph.multiselect("Usia",            all_usia,     default=all_usia)
-sel_fakultas = fakultas_ph.multiselect("Fakultas",    all_fakultas, default=all_fakultas)
-
+# ─── Apply Filter ─────────────────────────────────────────────────────────────
 df = df_full[
     df_full["Jenis Kelamin"].isin(sel_gender) &
     df_full["Usia"].isin(sel_usia) &
     df_full["Fakultas"].isin(sel_fakultas)
 ].copy()
-
-q_cols = list(Q_SHORT.keys())
 
 # ─── Header ───────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -144,11 +133,11 @@ low_q       = df[q_cols].mean().idxmin().split("–")[-1].strip()
 
 c1, c2, c3, c4, c5 = st.columns(5)
 for col, val, lbl in [
-    (c1, len(df),           "Total Responden"),
+    (c1, len(df),              "Total Responden"),
     (c2, f"{avg_overall:.2f}", "Rata-rata Skor (1–5)"),
-    (c3, best_q,            "Aspek Tertinggi"),
-    (c4, low_q,             "Aspek Terendah"),
-    (c5, f"{pct_pos:.0f}%", "Respons Positif (≥4)"),
+    (c3, best_q,               "Aspek Tertinggi"),
+    (c4, low_q,                "Aspek Terendah"),
+    (c5, f"{pct_pos:.0f}%",    "Respons Positif (≥4)"),
 ]:
     with col:
         st.markdown(f"""<div class="metric-card">
@@ -170,7 +159,7 @@ with tab1:
 
     with col_left:
         st.markdown('<p class="section-title">Rata-rata Skor per Pertanyaan</p>', unsafe_allow_html=True)
-        means = df[q_cols].mean()
+        means  = df[q_cols].mean()
         labels = [q.split("–")[-1].strip() for q in q_cols]
         colors = [bar_color(v) for v in means.values]
 
@@ -189,8 +178,8 @@ with tab1:
 
     with col_right:
         st.markdown('<p class="section-title">Distribusi Jawaban Keseluruhan</p>', unsafe_allow_html=True)
-        all_vals = df[q_cols].values.flatten()
-        all_vals = all_vals[~np.isnan(all_vals)].astype(int)
+        all_vals   = df[q_cols].values.flatten()
+        all_vals   = all_vals[~np.isnan(all_vals)].astype(int)
         val_counts = pd.Series(all_vals).value_counts().sort_index()
 
         fig2, ax2 = plt.subplots(figsize=(5, 3.5))
@@ -212,7 +201,7 @@ with tab1:
     st.markdown('<p class="section-title">Radar – Profil Kepuasan</p>', unsafe_allow_html=True)
     radar_vals   = df[q_cols].mean().tolist()
     radar_labels = [q.split("–")[-1].strip() for q in q_cols]
-    N = len(radar_labels)
+    N      = len(radar_labels)
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
     angles += angles[:1]
     radar_vals += radar_vals[:1]
@@ -237,8 +226,6 @@ with tab1:
 # TAB 2 – DEMOGRAFI
 # ════════════════════════════════════════════════════════
 with tab2:
-    d1, d2, d3 = st.columns(3)
-
     def plot_donut(ax, series, title):
         vc = series.value_counts()
         wedges, texts, autotexts = ax.pie(
@@ -263,8 +250,8 @@ with tab2:
     grp_col = st.radio("Kelompokkan berdasarkan:",
                        ["Jenis Kelamin", "Usia", "Fakultas"], horizontal=True)
 
-    grp_df   = df.groupby(grp_col)[q_cols].mean()
-    short_qs = [q.split("–")[-1].strip() for q in q_cols]
+    grp_df         = df.groupby(grp_col)[q_cols].mean()
+    short_qs       = [q.split("–")[-1].strip() for q in q_cols]
     grp_df.columns = short_qs
 
     fig_g, ax_g = plt.subplots(figsize=(10, 4))
@@ -295,12 +282,12 @@ with tab3:
 
     with qa:
         st.markdown('<p class="section-title">Distribusi Jawaban</p>', unsafe_allow_html=True)
-        vc = df[selected_q].dropna().astype(int).value_counts().sort_index()
+        vc        = df[selected_q].dropna().astype(int).value_counts().sort_index()
         vc_labels = [LIKERT_LABELS[i] for i in vc.index]
-        bar_colors = [LIKERT_COLORS[i-1] for i in vc.index]
+        bar_cols  = [LIKERT_COLORS[i-1] for i in vc.index]
 
         fig_dist, ax_dist = plt.subplots(figsize=(6, 3.5))
-        bars = ax_dist.bar(vc_labels, vc.values, color=bar_colors, edgecolor="white")
+        bars = ax_dist.bar(vc_labels, vc.values, color=bar_cols, edgecolor="white")
         for bar, val in zip(bars, vc.values):
             ax_dist.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.2,
                          str(val), ha="center", fontsize=9)
@@ -313,24 +300,23 @@ with tab3:
 
     with qb:
         st.markdown('<p class="section-title">Statistik Deskriptif</p>', unsafe_allow_html=True)
-        s = df[selected_q].dropna()
+        s     = df[selected_q].dropna()
         stats = pd.DataFrame({
             "Statistik": ["N (valid)", "Rata-rata", "Median", "Modus", "Std. Dev.", "Min", "Maks"],
-            "Nilai": [int(s.count()), round(s.mean(),3), round(s.median(),3),
-                      int(s.mode()[0]), round(s.std(),3), int(s.min()), int(s.max())]
+            "Nilai":     [int(s.count()), round(s.mean(),3), round(s.median(),3),
+                          int(s.mode()[0]), round(s.std(),3), int(s.min()), int(s.max())]
         })
         st.dataframe(stats, hide_index=True, use_container_width=True)
-
-        pct = (s >= 4).mean() * 100
+        pct  = (s >= 4).mean() * 100
         sent = "✅ Positif" if s.mean() >= 4 else ("⚠️ Netral" if s.mean() >= 3 else "❌ Negatif")
         st.info(f"**Sentimen:** {sent} &nbsp;&nbsp; **Positif (≥4):** {pct:.1f}%")
 
     # Box plot
     st.markdown('<p class="section-title">Box Plot per Kelompok Demografi</p>', unsafe_allow_html=True)
-    box_grp = st.radio("Kelompok:", ["Jenis Kelamin", "Usia", "Fakultas"],
-                       horizontal=True, key="box_grp")
-    groups    = df[box_grp].dropna().unique()
-    box_data  = [df[df[box_grp] == g][selected_q].dropna().values for g in groups]
+    box_grp  = st.radio("Kelompok:", ["Jenis Kelamin", "Usia", "Fakultas"],
+                        horizontal=True, key="box_grp")
+    groups   = df[box_grp].dropna().unique()
+    box_data = [df[df[box_grp] == g][selected_q].dropna().values for g in groups]
 
     fig_box, ax_box = plt.subplots(figsize=(8, 4))
     bp = ax_box.boxplot(box_data, tick_labels=list(groups), patch_artist=True)
@@ -343,9 +329,9 @@ with tab3:
     st.pyplot(fig_box)
     plt.close(fig_box)
 
-    # Heatmap
+    # Heatmap korelasi
     st.markdown('<p class="section-title">Korelasi antar Pertanyaan</p>', unsafe_allow_html=True)
-    corr = df[q_cols].corr()
+    corr         = df[q_cols].corr()
     corr.index   = [q.split("–")[-1].strip() for q in q_cols]
     corr.columns = corr.index
 
