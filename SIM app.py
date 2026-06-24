@@ -121,28 +121,21 @@ def bar_color(val):
 # ─── Load Data ────────────────────────────────────────────────────────────────
 df_full = load_data()
 
-# ─── Sidebar – Filter saja ────────────────────────────────────────────────────
+# ─── Sidebar – Info saja ─────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 🔍 Filter Responden")
+    st.markdown("### 📋 Informasi")
     st.markdown("---")
-
-    all_genders  = sorted(df_full["Jenis Kelamin"].dropna().unique())
-    all_usia     = sorted(df_full["Usia"].dropna().unique())
-    all_fakultas = sorted(df_full["Fakultas"].dropna().unique())
-
-    sel_gender   = st.multiselect("Jenis Kelamin", all_genders,  default=all_genders)
-    sel_usia     = st.multiselect("Usia",          all_usia,     default=all_usia)
-    sel_fakultas = st.multiselect("Fakultas",      all_fakultas, default=all_fakultas)
-
+    st.markdown("**Judul Survei**")
+    st.info("Kepuasan Mahasiswa terhadap Sistem Absensi Kampus")
+    st.markdown("**Peneliti**")
+    st.info("Ega Irza Ul Fanani\nNIM: 142223067")
+    st.markdown("**Total Responden**")
+    st.info(f"{len(df_full)} mahasiswa")
     st.markdown("---")
-    st.caption("Dashboard Survei Kepuasan\nSistem Absensi Kampus\n*Ega Irza Ul Fanani – 142223067*")
+    st.caption("Dashboard Survei Kepuasan\nSistem Absensi Kampus")
 
-# ─── Apply Filter ─────────────────────────────────────────────────────────────
-df = df_full[
-    df_full["Jenis Kelamin"].isin(sel_gender) &
-    df_full["Usia"].isin(sel_usia) &
-    df_full["Fakultas"].isin(sel_fakultas)
-].copy()
+# ─── Gunakan seluruh data ─────────────────────────────────────────────────────
+df = df_full.copy()
 
 # ─── Header ───────────────────────────────────────────────────────────────────
 st.markdown("""
