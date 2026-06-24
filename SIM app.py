@@ -333,7 +333,7 @@ with tab3:
     box_data  = [df[df[box_grp] == g][selected_q].dropna().values for g in groups]
 
     fig_box, ax_box = plt.subplots(figsize=(8, 4))
-    bp = ax_box.boxplot(box_data, labels=groups, patch_artist=True)
+    bp = ax_box.boxplot(box_data, tick_labels=list(groups), patch_artist=True)
     for patch, color in zip(bp["boxes"], COLOR_PALETTE):
         patch.set_facecolor(color); patch.set_alpha(0.6)
     ax_box.set_ylim(0.5, 5.5)
