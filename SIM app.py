@@ -44,38 +44,71 @@ LIKERT_LABELS = {1: "Sangat Tidak Setuju", 2: "Tidak Setuju", 3: "Netral",
                  4: "Setuju", 5: "Sangat Setuju"}
 LIKERT_COLORS = ["#ef4444", "#f97316", "#facc15", "#4ade80", "#22c55e"]
 
-Q_SHORT = {
-    "Q1 – Kemudahan Pemahaman":    "  Sistem absensi yang digunakan di kampus mudah dipahami  ",
-    "Q2 – Kecepatan Proses":       "  Proses absensi dapat dilakukan dengan cepat  ",
-    "Q3 – Minimnya Kendala/Error": "  Sistem absensi jarang mengalami kendala atau error  ",
-    "Q4 – Kemudahan Pencatatan":   "  Sistem absensi memudahkan mahasiswa dalam mencatat kehadiran  ",
-    "Q5 – Akurasi Informasi":      "  Informasi kehadiran yang ditampilkan dalam sistem akurat  ",
-}
-
 COLOR_PALETTE = ["#2d6a9f", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6",
                  "#06b6d4", "#ec4899", "#10b981"]
 
-# ─── Data Loader ──────────────────────────────────────────────────────────────
+Q_COLS = [
+    "Q1 – Kemudahan Pemahaman",
+    "Q2 – Kecepatan Proses",
+    "Q3 – Minimnya Kendala/Error",
+    "Q4 – Kemudahan Pencatatan",
+    "Q5 – Akurasi Informasi",
+]
+
+# ─── Data Hardcoded ───────────────────────────────────────────────────────────
+RAW_DATA = [
+    ["laki-laki", "26-35 tahun", "Teknik",  2, 2, 4, 1, 2],
+    ["laki-laki", "18-25 tahun", "Teknik",  2, 2, 4, 2, 1],
+    ["Perempuan", "18-25 tahun", "Fikes",   1, 2, 2, 2, 2],
+    ["laki-laki", "26-35 tahun", "Ekonomi", 1, 2, 4, 2, 2],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 3, 3, 2, 3, 2],
+    ["Perempuan", "18-25 tahun", "Ekonomi", 2, 3, 3, 2, 2],
+    ["laki-laki", "26-35 tahun", "Teknik",  2, 3, 2, 3, 3],
+    ["Perempuan", "18-25 tahun", "Teknik",  2, 3, 3, 2, 2],
+    ["Perempuan", "18-25 tahun", "Fikes",   2, 2, 2, 3, 3],
+    ["laki-laki", "18-25 tahun", "Teknik",  5, 5, 3, 4, 5],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 4, 4, 4, 3, 5],
+    ["Perempuan", "26-35 tahun", "Ekonomi", 4, 4, 3, 3, 4],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 3, 3, 3, 4, 4],
+    ["laki-laki", "18-25 tahun", "Teknik",  3, 3, 4, 4, 4],
+    ["Perempuan", "18-25 tahun", "Teknik",  4, 3, 3, 4, 4],
+    ["Perempuan", "18-25 tahun", "Fikes",   4, 4, 4, 4, 4],
+    ["laki-laki", "26-35 tahun", "Teknik",  3, 3, 3, 3, 3],
+    ["laki-laki", "18-25 tahun", "Teknik",  3, 3, 4, 4, 3],
+    ["laki-laki", "26-35 tahun", "Ekonomi", 3, 3, 4, 3, 2],
+    ["laki-laki", "26-35 tahun", "Ekonomi", 3, 4, 4, 5, 4],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 5, 5, 4, 4, 5],
+    ["Perempuan", "18-25 tahun", "Fikes",   3, 3, 2, 4, 4],
+    ["Perempuan", "26-35 tahun", "Ekonomi", 3, 3, 4, 3, 4],
+    ["Perempuan", "18-25 tahun", "Fikes",   3, 4, 4, 3, 3],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 3, 3, 4, 3, 5],
+    ["laki-laki", "18-25 tahun", "Ekonomi", 3, 3, 4, 3, 4],
+    ["laki-laki", "18-25 tahun", "Teknik",  4, 4, 4, 4, 4],
+    ["laki-laki", "26-35 tahun", "Fikes",   3, 4, 3, 4, 4],
+    ["Perempuan", "18-25 tahun", "Fikes",   3, 4, 3, 4, 4],
+    ["Perempuan", "18-25 tahun", "Fikes",   3, 4, 3, 3, 4],
+    ["Perempuan", "26-35 tahun", "Fikes",   3, 4, 3, 3, 4],
+    ["Perempuan", "18-25 tahun", "Ekonomi", 3, 3, 4, 4, 5],
+    ["laki-laki", "18-25 tahun", "Teknik",  3, 4, 5, 5, 4],
+    ["laki-laki", "18-25 tahun", "Teknik",  3, 3, 4, 4, 4],
+    ["laki-laki", "18-25 tahun", "Fikes",   3, 4, 4, 4, 4],
+    ["laki-laki", "26-35 tahun", "Teknik",  3, 4, 3, 4, 5],
+    ["laki-laki", "26-35 tahun", "Teknik",  3, 4, 3, 4, 5],
+    ["laki-laki", "26-35 tahun", "Teknik",  3, 4, 5, 5, 5],
+    ["laki-laki", "18-25 tahun", "Fikes",   3, 5, 4, 5, 5],
+    ["Perempuan", "18-25 tahun", "Ekonomi", 3, 3, 4, 4, 5],
+    ["Perempuan", "18-25 tahun", "Ekonomi", 5, 5, 4, 4, 5],
+    ["Perempuan", "18-25 tahun", "Fikes",   4, 5, 5, 5, 5],
+]
+
 @st.cache_data
 def load_data() -> pd.DataFrame:
-    raw = pd.read_excel("ega_irza_ul_fanani_142223067___Responses_.xlsx")
-    df = raw.iloc[:42].copy()
-    df = df[df["Jenis Kelamin:"].isin(["laki-laki", "Perempuan"])].copy()
-
-    rename = {
-        "Jenis Kelamin:": "Jenis Kelamin",
-        "Umur:":           "Usia",
-        "Fakultas:":       "Fakultas",
-    }
-    rename.update({v: k for k, v in Q_SHORT.items()})
-    df.rename(columns=rename, inplace=True)
+    df = pd.DataFrame(RAW_DATA,
+                      columns=["Jenis Kelamin", "Usia", "Fakultas"] + Q_COLS)
     df["Jenis Kelamin"] = df["Jenis Kelamin"].str.strip()
-
-    q_cols = list(Q_SHORT.keys())
-    for col in q_cols:
+    for col in Q_COLS:
         df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    df["Rata-rata"] = df[q_cols].mean(axis=1)
+    df["Rata-rata"] = df[Q_COLS].mean(axis=1)
     return df
 
 
@@ -86,13 +119,7 @@ def bar_color(val):
 
 
 # ─── Load Data ────────────────────────────────────────────────────────────────
-try:
-    df_full = load_data()
-except FileNotFoundError:
-    st.error("⚠️ File data tidak ditemukan. Pastikan file Excel ada di folder yang sama dengan app.py.")
-    st.stop()
-
-q_cols = list(Q_SHORT.keys())
+df_full = load_data()
 
 # ─── Sidebar – Filter saja ────────────────────────────────────────────────────
 with st.sidebar:
@@ -126,10 +153,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ─── KPI ──────────────────────────────────────────────────────────────────────
-avg_overall = df[q_cols].values.mean()
-pct_pos     = (df[q_cols].values.flatten() >= 4).mean() * 100
-best_q      = df[q_cols].mean().idxmax().split("–")[-1].strip()
-low_q       = df[q_cols].mean().idxmin().split("–")[-1].strip()
+avg_overall = df[Q_COLS].values.mean()
+pct_pos     = (df[Q_COLS].values.flatten() >= 4).mean() * 100
+best_q      = df[Q_COLS].mean().idxmax().split("–")[-1].strip()
+low_q       = df[Q_COLS].mean().idxmin().split("–")[-1].strip()
 
 c1, c2, c3, c4, c5 = st.columns(5)
 for col, val, lbl in [
@@ -159,8 +186,8 @@ with tab1:
 
     with col_left:
         st.markdown('<p class="section-title">Rata-rata Skor per Pertanyaan</p>', unsafe_allow_html=True)
-        means  = df[q_cols].mean()
-        labels = [q.split("–")[-1].strip() for q in q_cols]
+        means  = df[Q_COLS].mean()
+        labels = [q.split("–")[-1].strip() for q in Q_COLS]
         colors = [bar_color(v) for v in means.values]
 
         fig, ax = plt.subplots(figsize=(6, 3.5))
@@ -178,7 +205,7 @@ with tab1:
 
     with col_right:
         st.markdown('<p class="section-title">Distribusi Jawaban Keseluruhan</p>', unsafe_allow_html=True)
-        all_vals   = df[q_cols].values.flatten()
+        all_vals   = df[Q_COLS].values.flatten()
         all_vals   = all_vals[~np.isnan(all_vals)].astype(int)
         val_counts = pd.Series(all_vals).value_counts().sort_index()
 
@@ -199,8 +226,8 @@ with tab1:
 
     # Radar Chart
     st.markdown('<p class="section-title">Radar – Profil Kepuasan</p>', unsafe_allow_html=True)
-    radar_vals   = df[q_cols].mean().tolist()
-    radar_labels = [q.split("–")[-1].strip() for q in q_cols]
+    radar_vals   = df[Q_COLS].mean().tolist()
+    radar_labels = [q.split("–")[-1].strip() for q in Q_COLS]
     N      = len(radar_labels)
     angles = [n / float(N) * 2 * np.pi for n in range(N)]
     angles += angles[:1]
@@ -250,8 +277,8 @@ with tab2:
     grp_col = st.radio("Kelompokkan berdasarkan:",
                        ["Jenis Kelamin", "Usia", "Fakultas"], horizontal=True)
 
-    grp_df         = df.groupby(grp_col)[q_cols].mean()
-    short_qs       = [q.split("–")[-1].strip() for q in q_cols]
+    grp_df         = df.groupby(grp_col)[Q_COLS].mean()
+    short_qs       = [q.split("–")[-1].strip() for q in Q_COLS]
     grp_df.columns = short_qs
 
     fig_g, ax_g = plt.subplots(figsize=(10, 4))
@@ -276,7 +303,7 @@ with tab2:
 # TAB 3 – ANALISIS PERTANYAAN
 # ════════════════════════════════════════════════════════
 with tab3:
-    selected_q = st.selectbox("Pilih Pertanyaan:", q_cols)
+    selected_q = st.selectbox("Pilih Pertanyaan:", Q_COLS)
 
     qa, qb = st.columns([1, 1], gap="large")
 
@@ -331,8 +358,8 @@ with tab3:
 
     # Heatmap korelasi
     st.markdown('<p class="section-title">Korelasi antar Pertanyaan</p>', unsafe_allow_html=True)
-    corr         = df[q_cols].corr()
-    corr.index   = [q.split("–")[-1].strip() for q in q_cols]
+    corr         = df[Q_COLS].corr()
+    corr.index   = [q.split("–")[-1].strip() for q in Q_COLS]
     corr.columns = corr.index
 
     fig_hm, ax_hm = plt.subplots(figsize=(7, 5))
@@ -350,19 +377,19 @@ with tab3:
 # ════════════════════════════════════════════════════════
 with tab4:
     st.markdown('<p class="section-title">Tabel Responden</p>', unsafe_allow_html=True)
-    display_cols = ["Jenis Kelamin", "Usia", "Fakultas"] + q_cols + ["Rata-rata"]
+    display_cols = ["Jenis Kelamin", "Usia", "Fakultas"] + Q_COLS + ["Rata-rata"]
     st.dataframe(
         df[display_cols].style.background_gradient(
-            subset=q_cols + ["Rata-rata"], cmap="Blues", vmin=1, vmax=5),
+            subset=Q_COLS + ["Rata-rata"], cmap="Blues", vmin=1, vmax=5),
         use_container_width=True, height=420,
     )
 
     out = io.BytesIO()
     df[display_cols].to_excel(out, index=False)
     st.download_button(
-        "⬇️ Download Data Terfilter (.xlsx)",
+        "⬇️ Download Data (.xlsx)",
         data=out.getvalue(),
-        file_name="survei_absensi_filtered.xlsx",
+        file_name="survei_absensi.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
